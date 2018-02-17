@@ -5,6 +5,10 @@
 
 #include <stdlib.h>
 
+#include <sys/file.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
+
 void ChildProcess();
 void ParentProcess();
 void error_and_die(const char *msg);
@@ -48,7 +52,7 @@ void ChildProcess()
 
 /* Daemon-specific initialization goes here */
 	const char *memname = "sample";
-	const size_t region_size = sysconf(_SC_PAGE_SIZE);
+	const size_t region_size = sizeof(int)*5;
 
 	int fd = shm_open(memname, O_CREAT | O_TRUNC | O_RDWR, 0666);
 	if (fd == -1)
@@ -58,16 +62,15 @@ void ChildProcess()
 	if (r != 0)
 		error_and_die("ftruncate");
 
-	void *ptr = mmap(0, region_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	char *ptr = mmap(0, region_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 	if (ptr == MAP_FAILED)
 		error_and_die("mmap");
 	close(fd);
 
-	u_long *d = (u_long *) ptr;
 /* The Big Loop */
 	while (1) {
 		
-		*d = 0xdbeebee;
+		ptr[0] = 'a';
 		sleep(3); /* wait 3 seconds */
 	}
 
