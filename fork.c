@@ -7,13 +7,14 @@
 
 void ChildProcess();
 void ParentProcess();
+void error_and_die(const char *msg);
 
 int main()
 {
 	int id;
 	int vector[5];
 	printf("Iniciando!\n");
-	
+
 	id=fork();
 	if(id>0){
 		ParentProcess();
@@ -27,32 +28,49 @@ int main()
 	}
 	return 0;
 }
-	
+
 void ChildProcess()
 {
 	printf("Fork creado [Process id: %d]\n",getpid());
 	printf("Fork padre es [Process id: %d]\n",getppid());
-	/* Change the file mode mask */
-        umask(0);       
-        
-        /* Open any logs here */
-        
-        /* Create a new SID for the child process */
-        int sid = setsid();
-        if (sid < 0) {
-                /* Log any failures here */
-                exit(EXIT_FAILURE);
-        }
-        
-        
-        /* Daemon-specific initialization goes here */
-        
-        /* The Big Loop */
-        while (1) {
-           
-           sleep(3); /* wait 3 seconds */
-        }
-	
+/* Change the file mode mask */
+	umask(0);       
+
+/* Open any logs here */
+
+/* Create a new SID for the child process */
+	int sid = setsid();
+	if (sid < 0) {
+/* Log any failures here */
+		exit(EXIT_FAILURE);
+	}
+
+
+/* Daemon-specific initialization goes here */
+	const char *memname = "sample";
+	const size_t region_size = sysconf(_SC_PAGE_SIZE);
+
+	int fd = shm_open(memname, O_CREAT | O_TRUNC | O_RDWR, 0666);
+	if (fd == -1)
+		error_and_die("shm_open");
+
+	int r = ftruncate(fd, region_size);
+	if (r != 0)
+		error_and_die("ftruncate");
+
+	void *ptr = mmap(0, region_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	if (ptr == MAP_FAILED)
+		error_and_die("mmap");
+	close(fd);
+
+	u_long *d = (u_long *) ptr;
+/* The Big Loop */
+	while (1) {
+		
+		*d = 0xdbeebee;
+		sleep(3); /* wait 3 seconds */
+	}
+
 }
 
 void ParentProcess()
@@ -60,4 +78,8 @@ void ParentProcess()
 	printf("El padre es [Process id: %d]\n",getpid());
 	exit(EXIT_SUCCESS);
 }	
-	
+
+void error_and_die(const char *msg) {
+	perror(msg);
+	exit(EXIT_FAILURE);
+}
