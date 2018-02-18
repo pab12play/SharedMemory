@@ -58,13 +58,13 @@ void ChildProcess()
 		char input = getchar();
 		if(input=='1'){
 			for(int i = 0; i < 10; i++){
-				printf("Posicion %d: Valor: %d\n", i, *ptr);
+				printf("Posicion %d: Valor: %d\n", i, ptr[i]);
 			}
 		}
 		if(input=='2'){
 			for(int i = 0; i < 10; i++){
 				ptr[i] = 0;
-				printf("Posicion %d: Valor: %d\n", i, *ptr);
+				printf("Posicion %d: Valor: %d\n", i, ptr[i]);
 			}	
 		}
 		if(input=='3'){

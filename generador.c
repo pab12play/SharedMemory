@@ -1,26 +1,20 @@
-//standard input output
 #include <stdio.h>
-//unix standard
-#include <unistd.h>
-
 #include <stdlib.h>
-
-#include <errno.h>      /* errno and perror */
-
+#include <sys/types.h>
 #include <sys/file.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 
 void ChildProcess();
 void ParentProcess();
 void error_and_die(const char *msg);
 
+
 int main()
 {
-	int id;
 	printf("Iniciando!\n");
-
 	pid_t pid=fork();
 	srand((int) pid);
 	if(pid>0){
@@ -35,10 +29,11 @@ int main()
 	return 0;
 }
 
+
 void ChildProcess()
 {
-	printf("Fork creado [Process id: %d]\n",getpid());
-	printf("Fork padre es [Process id: %d]\n",getppid());
+	printf("CHILD: Fork creado [Process id: %d]\n",getpid());
+	printf("CHILD: id del padre es [Process id: %d]\n",getppid());
 /* Change the file mode mask */
 	umask(0);       
 
@@ -50,8 +45,6 @@ void ChildProcess()
 		error_and_die("SID");
 	}
 
-
-/* Daemon-specific initialization goes here */
 	const char *memname = "sample";
 	const size_t region_size = sizeof(char)*10;
 
@@ -70,10 +63,12 @@ void ChildProcess()
 		error_and_die("mmap");
 	}
 	close(fd);
+
 	int i = 0;
-/* The Big Loop */
-	while (1) {
+	while(1){
 		ptr[i] = rand()%100+1;
+		//printf("Escribiendo en memoria[%d]=%d \n",i,ptr[i]);
+		//fflush(stdout);
 		i++;
 		if(i>=10)i=0;	
 		sleep(3); /* wait 3 seconds */
@@ -83,7 +78,7 @@ void ChildProcess()
 
 void ParentProcess()
 {
-	printf("El padre es [Process id: %d]\n",getpid());
+	printf("PARENT: El id es [Process id: %d]\n",getpid());
 	exit(EXIT_SUCCESS);
 }	
 
