@@ -33,9 +33,7 @@ int main()
 void ChildProcess()
 {
 	printf("CHILD: Fork creado [Process id: %d]\n",getpid());
-	printf("CHILD: id del padre es [Process id: %d]\n",getppid());
-/* Change the file mode mask */
-	umask(0);       
+	printf("CHILD: id del padre es [Process id: %d]\n",getppid());    
 
 /* Open any logs here */
 

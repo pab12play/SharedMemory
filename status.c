@@ -54,6 +54,7 @@ void ChildProcess()
 		printf("2. Limpiar listado de numeros \n");
 		printf("3. Detener proceso \n");
 		printf("4. Mostrar estado \n");
+		printf("5. Salir \n");
 		scanf("Escoja una opcion: ");
 		char input = getchar();
 		if(input=='1'){
@@ -68,10 +69,17 @@ void ChildProcess()
 			}	
 		}
 		if(input=='3'){
-			
+			system("pkill generador.o");
 		}
 		if(input=='4'){
-			
+			printf("Proceso A\n");
+			system("pgrep generador.o");
+			printf("Proceso B\n");
+			printf("%d\n", getppid());
+			printf("%d\n", getpid());
+		}
+		if(input=='5'){
+			exit(EXIT_SUCCESS);
 		}
 		getchar();
 	}
