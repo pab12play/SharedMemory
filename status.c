@@ -10,7 +10,7 @@
 void ChildProcess();
 void ParentProcess();
 void error_and_die(const char *msg);
-
+char* open_mem(char* memname, int region_size);
 
 int main()
 {
@@ -34,20 +34,10 @@ void ChildProcess()
 	printf("CHILD: Fork creado [Process id: %d]\n",getpid());
 	printf("CHILD: id del padre es [Process id: %d]\n",getppid());
 
-	const char *memname = "sample";
 	const size_t region_size = sizeof(char)*10;
 
-	int fd = shm_open(memname, O_RDWR, 0666);
-	if (fd == -1){
-		error_and_die("shm_open");
-	}
-
-	char *ptr = mmap(0, region_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	if (ptr == MAP_FAILED){
-		error_and_die("mmap");
-	}
-	close(fd);
-
+	char *ptr1 = open_mem("area1", region_size);
+	char *ptr2 = open_mem("area2", region_size);
 
 	while(1){
 		printf("\n1. Mostrar listado de numeros \n");
@@ -58,18 +48,30 @@ void ChildProcess()
 		scanf("Escoja una opcion: ");
 		char input = getchar();
 		if(input=='1'){
+			printf("Processo 1\n");
 			for(int i = 0; i < 10; i++){
-				printf("Posicion %d: Valor: %d\n", i, ptr[i]);
+				printf("Posicion %d: Valor: %d\n", i, ptr1[i]);
+			}
+			printf("Processo 2\n");
+			for(int i = 0; i < 10; i++){
+				printf("Posicion %d: Valor: %d\n", i, ptr2[i]);
 			}
 		}
 		if(input=='2'){
+			printf("Processo 1\n");
 			for(int i = 0; i < 10; i++){
-				ptr[i] = 0;
-				printf("Posicion %d: Valor: %d\n", i, ptr[i]);
+				ptr1[i] = 0;
+				printf("Posicion %d: Valor: %d\n", i, ptr1[i]);
+			}	
+			printf("Processo 2\n");
+			for(int i = 0; i < 10; i++){
+				ptr2[i] = 0;
+				printf("Posicion %d: Valor: %d\n", i, ptr2[i]);
 			}	
 		}
 		if(input=='3'){
 			system("pkill generador.o");
+			system("pkill pares.o");
 		}
 		if(input=='4'){
 			printf("Proceso A\n");
@@ -77,6 +79,8 @@ void ChildProcess()
 			printf("Proceso B\n");
 			printf("%d\n", getppid());
 			printf("%d\n", getpid());
+			printf("Proceso C\n");
+			system("pgrep pares.o");
 		}
 		if(input=='5'){
 			exit(EXIT_SUCCESS);
@@ -99,4 +103,18 @@ void ParentProcess()
 void error_and_die(const char *msg) {
 	perror(msg);
 	exit(EXIT_FAILURE);
+}
+
+char* open_mem(char* memname, int region_size){
+	int fd = shm_open(memname, O_RDWR, 0666);
+	if (fd == -1){
+		error_and_die("shm_open");
+	}
+
+	char *ptr = mmap(0, region_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	if (ptr == MAP_FAILED){
+		error_and_die("mmap");
+	}
+	close(fd);
+	return ptr;
 }

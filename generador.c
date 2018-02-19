@@ -43,7 +43,7 @@ void ChildProcess()
 		error_and_die("SID");
 	}
 
-	const char *memname = "sample";
+	const char *memname = "area1";
 	const size_t region_size = sizeof(char)*10;
 
 	int fd = shm_open(memname, O_CREAT | O_TRUNC | O_RDWR, 0666);
